@@ -1,0 +1,3 @@
+- import_tasks: sendmail_for_docker.yml
+  tags:
+    - sendmail_for_docker

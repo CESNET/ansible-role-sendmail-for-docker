@@ -1,0 +1,14 @@
+galaxy_info:
+  role_name: sendmail_for_docker
+  author: Martin Kuba
+  description: Installs Sendmail on Debian and configures ot to be usable from Docker containers inside of a Docker network
+  company: CESNET
+  license: Apache
+  min_ansible_version: 2.9
+  platforms:
+   - name: Debian
+     versions:
+     - buster
+  galaxy_tags:
+    - "system"
+dependencies: []

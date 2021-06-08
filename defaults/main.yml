@@ -1,0 +1,4 @@
+sendmail_for_docker_hostname: "{{ inventory_hostname }}"
+sendmail_for_docker_bridge_network_name: perun_net
+sendmail_for_docker_bridge_network_gateway: 192.168.0.1
+sendmail_for_docker_config: ""
