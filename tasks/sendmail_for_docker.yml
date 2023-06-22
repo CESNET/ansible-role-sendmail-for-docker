@@ -1,16 +1,9 @@
-- name:  "Ansible 2.9+ required"
-  assert:
-    that:
-      - ansible_version is defined
-      - ansible_version.full is version_compare('2.9', '>=')
-    msg: "Required Ansible version is 2.9+"
-
-- name: "Debian 10/11 required"
+- name: "Debian 10+ required"
   assert:
     that:
       - ansible_distribution == "Debian"
-      - ansible_distribution_major_version in [ "10", "11" ]
-    msg: "Only Debian 10/11 is supported, this is {{ ansible_distribution }} {{ ansible_distribution_major_version }}"
+      - ansible_distribution_major_version is version('10','>=')
+    msg: "Only Debian 10+ is supported, this is {{ ansible_distribution }} {{ ansible_distribution_major_version }}"
 
 - name: "install sendmail package"
   package:
