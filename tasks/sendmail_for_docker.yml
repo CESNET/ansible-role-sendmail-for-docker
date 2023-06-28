@@ -21,10 +21,19 @@
     path: /etc/hosts
     line: "{{ ansible_facts.docker0.ipv4.address }} docker0"
 
+- name: "get {{ sendmail_for_docker_bridge_network_name }} info"
+  docker_network_info:
+    name: "{{ sendmail_for_docker_bridge_network_name }}"
+  register: perun_net_info
+
 - name: "add {{ sendmail_for_docker_bridge_network_name }} bridge network gateway to /etc/hosts to avoid warnings in log"
   lineinfile:
     path: /etc/hosts
-    line: "{{ sendmail_for_docker_bridge_network_gateway}} {{ sendmail_for_docker_bridge_network_name }}"
+    line: "{{ perun_net_info.network.IPAM.Config[0].Gateway }} {{ sendmail_for_docker_bridge_network_name }}"
+
+- name: "compute net prefix"
+  set_fact:
+    perun_net_prefix: "{{ perun_net_info.network.IPAM.Config[0].Subnet |regex_replace('\\.\\d+\\.\\d+/\\d+$','')}}"
 
 - name: "make sendmail to listen on all IP addresses"
   lineinfile:
@@ -46,10 +55,10 @@
     dest: /etc/mail/access
     marker: '# {mark} ANSIBLE MANAGED BLOCK'
     block: |
-      Connect:192.168 RELAY
-      GreetPause:192.168 0
-      ClientRate:192.168 0
-      ClientConn:192.168 0
+      Connect:{{ perun_net_prefix }} RELAY
+      GreetPause:{{ perun_net_prefix }} 0
+      ClientRate:{{ perun_net_prefix }} 0
+      ClientConn:{{ perun_net_prefix }} 0
   register: smtp_subnet
 
 - name: "rebuild sendmail files"
