@@ -1,9 +1,9 @@
 - name: "Debian 10+ required"
   assert:
     that:
-      - ansible_distribution == "Debian"
-      - ansible_distribution_major_version is version('10','>=')
-    msg: "Only Debian 10+ is supported, this is {{ ansible_distribution }} {{ ansible_distribution_major_version }}"
+      - ansible_facts['distribution'] == "Debian"
+      - ansible_facts['distribution_major_version'] is version('10','>=')
+    fail_msg: "Only Debian 10+ is supported, this is {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_major_version'] }}"
 
 - name: "install sendmail package"
   package:
@@ -44,7 +44,7 @@
 
 - name: "add lines to sendmail.mc (usually to set SMTP relay)"
   blockinfile:
-    dest: /etc/mail/sendmail.mc
+    path: /etc/mail/sendmail.mc
     insertbefore: '^MAILER_DEFINITIONS'
     marker: 'dnl # {mark} ANSIBLE MANAGED BLOCK'
     block: "{{ sendmail_for_docker_config }}"
@@ -52,7 +52,7 @@
 
 - name: "allow relaying from docker subnet"
   blockinfile:
-    dest: /etc/mail/access
+    path: /etc/mail/access
     marker: '# {mark} ANSIBLE MANAGED BLOCK'
     block: |
       Connect:{{ perun_net_prefix }} RELAY
@@ -63,7 +63,7 @@
 
 - name: "rebuild sendmail files"
   when: smtp_ip_address.changed or smtp_relay.changed or smtp_subnet.changed
-  command:
+  ansible.builtin.command:
     chdir: /etc/mail
     cmd: "make"
   register: sendmail_reloaded
@@ -79,6 +79,6 @@
 
 - name: "reload sendmail service"
   when: sendmail_reloaded.changed
-  service:
+  ansible.builtin.service:
     name: sendmail
     state: restarted
