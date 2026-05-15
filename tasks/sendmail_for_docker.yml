@@ -77,6 +77,11 @@
     dest: /etc/hostname
     content: "{{ sendmail_for_docker_hostname }}"
 
+- name: Ensure systemd/sendmail.service.d directory is created
+  ansible.builtin.file:
+    path: /etc/systemd/system/sendmail.service.d
+    state: directory
+
 - name: Ensure sendmail starts after docker
   ansible.builtin.copy:
     dest: /etc/systemd/system/sendmail.service.d/start-after-docker.conf
