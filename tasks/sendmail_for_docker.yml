@@ -77,20 +77,27 @@
     dest: /etc/hostname
     content: "{{ sendmail_for_docker_hostname }}"
 
-- name: Ensure systemd/sendmail.service.d directory is created
+- name: "ensure systemd/sendmail.service.d directory is created"
   ansible.builtin.file:
     path: /etc/systemd/system/sendmail.service.d
     state: directory
 
-- name: Ensure sendmail starts after docker
+- name: "ensure sendmail starts after docker"
   ansible.builtin.copy:
     dest: /etc/systemd/system/sendmail.service.d/start-after-docker.conf
     content: |
       [Unit]
       After=docker.service
+  register: systemd_config_change
 
-- name: "reload sendmail service"
-  when: sendmail_reloaded.changed
+- name: "Systemd daemon reload"
+  when: systemd_config_change.changed or sendmail_reloaded.changed
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: "enable and reload sendmail service"
+  when: systemd_config_change.changed or sendmail_reloaded.changed
   ansible.builtin.service:
     name: sendmail
+    enabled: yes
     state: restarted
