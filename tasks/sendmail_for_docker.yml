@@ -1,9 +1,16 @@
-- name: "Debian 10+ required"
+- name: "Debian 11+ required"
   assert:
     that:
       - ansible_facts['distribution'] == "Debian"
-      - ansible_facts['distribution_major_version'] is version('10','>=')
-    fail_msg: "Only Debian 10+ is supported, this is {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_major_version'] }}"
+      - ansible_facts['distribution_major_version'] is version('11','>=')
+    fail_msg: "Only Debian 11+ is supported, this is {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_major_version'] }}"
+
+- name: "check that variable sendmail_for_docker_root_email_address is defined"
+  assert:
+    that:
+      - sendmail_for_docker_root_email_address is defined
+    msg: "Define variable sendmail_for_docker_root_email_address !"
+    quiet: true
 
 - name: "install sendmail package"
   package:
@@ -101,3 +108,32 @@
     name: sendmail
     enabled: yes
     state: restarted
+
+- name: "set root mail alias"
+  lineinfile:
+    state: present
+    path: /etc/aliases
+    create: true
+    owner: root
+    group: root
+    mode: '0644'
+    regexp: "^root:"
+    line: "root: {{ sendmail_for_docker_root_email_address }}"
+  notify: "run newaliases"
+  tags:
+    - aliases
+
+- name: "set up mail alias for postmaster"
+  loop:
+    - postmaster
+  lineinfile:
+    path: /etc/aliases
+    regexp: "^{{ item }}:"
+    line: "{{ item }}: root"
+    state: present
+  notify: "run newaliases"
+  tags:
+    - aliases
+
+- name: "flush handlers"
+  meta: flush_handlers
