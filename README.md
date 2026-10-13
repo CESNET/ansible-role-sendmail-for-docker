@@ -7,6 +7,7 @@ coming from a specified Docker subnet.
 Role Variables
 --------------
 
+- **sendmail_for_docker_root_email_address** - address used in /etc/aliases for root account
 - **sendmail_for_docker_hostname** - the hostname to be set for the machine, it appears in the MIME headers in outgoing emails
 - **sendmail_for_docker_bridge_network_name** - the name of Docker bridge network that should be able to send emails, it is added to /etc/hosts, default is perun_net 
 - **sendmail_for_docker_config** - arbitrary lines to be added to /etc/mail/sendmail.mc, default is empty
@@ -18,6 +19,7 @@ Example Playbook
   roles:
     - role: cesnet.sendmail_for_docker
       vars:
+        sendmail_for_docker_root_email_address: john@example.org
         sendmail_for_docker_hostname: my-server.example.org
         sendmail_for_docker_bridge_network_name: perun_net
         sendmail_for_docker_bridge_network_gateway: 192.168.0.1
